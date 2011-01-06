@@ -6,11 +6,11 @@ Puppet::Type.type(:package).provide :npm, :parent => Puppet::Provider::Package d
   commands :npm_cmd => "/usr/local/bin/npm"
 
   def install
-    output = npm_cmd :install, @resource[:name]
-
+    npm_cmd :install, @resource[:name]
   end
 
   def uninstall
+    npm_cmd :uninstall @resource[:name]
   end
     
 end
