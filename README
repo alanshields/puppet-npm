@@ -1,0 +1,4 @@
+
+This is a puppet module that installs node 0.3.3 from source, installs npm, and creates an npm provider.
+
+node and npm are both installed into ~/opt for the node user.
