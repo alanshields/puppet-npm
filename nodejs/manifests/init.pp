@@ -29,7 +29,7 @@ class nodejs {
   file { "/home/node/.bashrc":
     ensure => "present",
     owner => "node",
-    content => 'PATH=~/opt/bin:${PATH}'
+    content => template('nodejs/node_bashrc.erb')
   }
 
   file { "/tmp/node-v0.3.3.tar.gz":
@@ -65,6 +65,20 @@ class nodejs {
     require => Exec["make_node"],
     timeout => "-1",
     creates => "/home/node/opt/bin/node"
+  }
+
+  file { "/home/node/opt/bin/node":
+    owner => "node",
+    group => "node",
+    require => Exec["install_node"],
+    recurse => true
+  }
+
+  file { "/home/node/opt/bin/node-waf":
+    owner => "node",
+    group => "node",
+    recurse => true,
+    require => Exec["install_node"]
   }
 
 }

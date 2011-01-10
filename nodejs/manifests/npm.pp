@@ -16,8 +16,15 @@ class nodejs::npm {
     command => "/home/node/opt/bin/node cli.js install npm",
     require => Exec["clone_npm"],
     creates => "/home/node/opt/bin/npm",
-    user => "node"
+    user => "node",
+    timeout => "-1"
+  }
 
+  file { "/home/node/opt/bin/npm":
+    owner => "node",
+    group => "node",
+    recurse => true,
+    require => Exec["make_npm"]
   }
     
 }

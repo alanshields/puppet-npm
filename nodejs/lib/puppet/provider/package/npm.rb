@@ -1,18 +1,25 @@
 
+require 'puppet/provider/package'
+
 Puppet::Type.type(:package).provide :npm, :parent => Puppet::Provider::Package do
   desc "node.js package management with npm"
 
   commands :npm_cmd => "/home/node/opt/bin/npm"
   raise Puppet::Error, "The npm provider can only be used as root" if Process.euid != 0
 
-  def self.npm_list
-    
+  def self.npm_list(hash) 
     begin
-      s = `sudo -u node sh -c \"export PATH=/home/node/opt/bin; npm ls installed\"`
+      s = `sudo -u node -b sh -c \"export PATH=/home/node/opt/bin:${PATH}; cd /home/node; npm ls installed\"`
       list = s.split("\n").collect do |set|
         if npm_hash = npm_split(set)
           npm_hash[:provider] = :npm
-          npm_hash
+          if npm_hash[:name] == hash[:justme]
+            npm_hash
+          elsif hash[:local]
+            npm_hash
+          else
+            nil
+          end
         else
           nil
         end
@@ -20,8 +27,11 @@ Puppet::Type.type(:package).provide :npm, :parent => Puppet::Provider::Package d
     rescue Puppet::ExecutionFailure => detail
       raise Puppet::Error, "Could not list npm packages: #{detail}"
     end
-    
-    return list.shift
+    if hash[:local]
+      list
+    else
+      list.shift
+    end
   end
 
   def self.npm_split(desc)
@@ -40,17 +50,25 @@ Puppet::Type.type(:package).provide :npm, :parent => Puppet::Provider::Package d
     end
   end
 
+  def self.instances
+    npm_list(:local => true).collect do |hash|
+      new(hash)
+    end
+  end
+
   def install
-    system("sudo -u node sh -c \"export PATH=/home/node/opt/bin; npm install #{@resource[:name]}\"")
+    output = `sudo -u node -b sh -c "export PATH=/home/node/opt/bin:${PATH}; cd /home/node; npm install #{resource[:name]}"`
+    self.fail "Could not install: #{resource[:name]}" if output.include?("npm not ok")
   end
 
   def uninstall
-    system("sudo -u node sh -c \"export PATH=/home/node/opt/bin; npm uninstall #{@resource[:name]}\"")
+    output = `sudo -u node -b sh -c "export PATH=/home/node/opt/bin:${PATH}; cd /home/node; npm uninstall #{resource[:name]}"`
+    self.fail "Could not uninstall: #{resource[:name]}" if output.include?("npm not ok")
   end
 
   def query
     version = nil
-    self.class.npm_list
+    self.class.npm_list(:justme => resource[:name])
   end
     
 end

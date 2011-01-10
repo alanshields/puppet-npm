@@ -13,6 +13,6 @@ class nodejs::httpconsole {
   package { "http-console":
     provider => "npm",
     ensure => "installed",
-    require => Exec["make_npm"]
+    require => [Exec["make_npm"], Package["eyes"]]
   }
 }
