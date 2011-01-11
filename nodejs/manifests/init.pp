@@ -23,6 +23,7 @@ class nodejs {
 
   user { "node":
     ensure => "present",
+    home => "/home/node",
     require => File["/home/node"]
   }
 

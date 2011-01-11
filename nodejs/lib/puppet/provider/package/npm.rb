@@ -9,7 +9,8 @@ Puppet::Type.type(:package).provide :npm, :parent => Puppet::Provider::Package d
 
   def self.npm_list(hash) 
     begin
-      s = `sudo -u node -b sh -c \"export PATH=/home/node/opt/bin:${PATH}; cd /home/node; npm ls installed\"`
+      s = `sudo -u node node /home/node/opt/lib/npm/cli.js ls installed`
+      self.fail "Could not list" if $?.exitstatus != 0
       list = s.split("\n").collect do |set|
         if npm_hash = npm_split(set)
           npm_hash[:provider] = :npm
@@ -57,12 +58,12 @@ Puppet::Type.type(:package).provide :npm, :parent => Puppet::Provider::Package d
   end
 
   def install
-    output = `sudo -u node -b sh -c "export PATH=/home/node/opt/bin:${PATH}; cd /home/node; npm install #{resource[:name]}"`
+    output = `sudo -u node node /home/node/opt/lib/npm/cli.js install #{resource[:name]}`
     self.fail "Could not install: #{resource[:name]}" if output.include?("npm not ok")
   end
 
   def uninstall
-    output = `sudo -u node -b sh -c "export PATH=/home/node/opt/bin:${PATH}; cd /home/node; npm uninstall #{resource[:name]}"`
+    output = `sudo -u node node /home/node/opt/lib/npm/cli.js uninstall #{resource[:name]}"`
     self.fail "Could not uninstall: #{resource[:name]}" if output.include?("npm not ok")
   end
 
