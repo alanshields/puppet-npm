@@ -4,27 +4,29 @@ require 'puppet/provider/package'
 Puppet::Type.type(:package).provide :npm, :parent => Puppet::Provider::Package do
   desc "node.js package management with npm"
 
-  commands :npm_cmd => "/home/node/opt/bin/npm"
   raise Puppet::Error, "The npm provider can only be used as root" if Process.euid != 0
 
-  def self.npm_list(hash) 
+  def self.exec_as_user(op, pkg)
+    Puppet::Util::SUIDManager.asuser("node", "node") do 
+      s = execute ["/home/node/opt/bin/node", "/home/node/opt/lib/npm/cli.js", "#{op}", "#{pkg}"]
+      s.split("\n").collect do | line |
+        yield line
+      end
+    end
+  end
+
+  def self.npm_list(hash)
     begin
-      s = `sudo -u node node /home/node/opt/lib/npm/cli.js ls installed`
-      self.fail "Could not list" if $?.exitstatus != 0
-      list = s.split("\n").collect do |set|
-        if npm_hash = npm_split(set)
+      list = []
+      exec_as_user("list", "installed") do | line |
+        if npm_hash = npm_split(line)
           npm_hash[:provider] = :npm
-          if npm_hash[:name] == hash[:justme]
-            npm_hash
-          elsif hash[:local]
-            npm_hash
-          else
-            nil
+          if (npm_hash[:name] == hash[:justme]) or hash[:local]
+            list << npm_hash
           end
-        else
-          nil
         end
-      end.compact
+      end
+      list.compact!
     rescue Puppet::ExecutionFailure => detail
       raise Puppet::Error, "Could not list npm packages: #{detail}"
     end
@@ -41,7 +43,6 @@ Puppet::Type.type(:package).provide :npm, :parent => Puppet::Provider::Package d
     name = installed.split(/@/)[0]
     version = installed.split(/@/)[1]
     if (name.nil? || version.nil?)
-      Puppet.warning "Could not match #{desc}"
       nil
     else
       return {
@@ -58,13 +59,13 @@ Puppet::Type.type(:package).provide :npm, :parent => Puppet::Provider::Package d
   end
 
   def install
-    output = `sudo -u node node /home/node/opt/lib/npm/cli.js install #{resource[:name]}`
+    output = self.class.exec_as_user("install", resource[:name]) { | line | line }.collect
     self.fail "Could not install: #{resource[:name]}" if output.include?("npm not ok")
   end
-
+  
   def uninstall
-    output = `sudo -u node node /home/node/opt/lib/npm/cli.js uninstall #{resource[:name]}"`
-    self.fail "Could not uninstall: #{resource[:name]}" if output.include?("npm not ok")
+    output = self.class.exec_as_user("uninstall", resource[:name]) { | line | line }.collect
+    self.fail "Could not install: #{resource[:name]}" if output.include?("npm not ok")
   end
 
   def query
