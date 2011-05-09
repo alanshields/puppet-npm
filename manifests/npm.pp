@@ -13,27 +13,30 @@ class nodejs::npm {
     group => "node"
   }
 
-  exec { "clone_npm":
-    cwd => "/home/node/opt/lib",
-    command => "/usr/bin/git clone http://github.com/isaacs/npm.git",
-    creates => "/home/node/opt/lib/npm",
-    require => [Exec["install_node"], Package["git"], File["/home/node/opt/lib"]]
+  vcsrepo { "/home/node/opt/lib/npm":
+    ensure	=> present,
+    provider => git,
+    source => "http://github.com/isaacs/npm.git",
+    require => [Exec["install_node"], Package["git"], File["/home/node/opt/lib"]], 
+    revision => "HEAD"
   }
 
   file { "/home/node/opt/lib/npm":
     ensure => "directory",
     owner => "node",
     group => "node",
-    require => Exec["clone_npm"]
+    require => Vcsrepo["/home/node/opt/lib/npm"],
+    recurse => true,
   }
   
   exec { "make_npm":
     cwd => "/home/node/opt/lib/npm",
-    command => "/home/node/opt/bin/node /home/node/opt/lib/npm/cli.js install npm",
-    require => [Exec["clone_npm"], File["/home/node/opt/lib/npm"]],
+    command => "make install",
+    require => [Vcsrepo["/home/node/opt/lib/npm"], File["/home/node/opt/lib/npm"]],
     creates => "/home/node/opt/bin/npm",
     user => "node",
-    timeout => 0
+    timeout => 0,
+    path    => ["/usr/bin/","/bin/"],
   }
 
   file { "/home/node/opt/bin/npm":
