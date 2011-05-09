@@ -1,49 +1,39 @@
 
-class nodejs::npm {
+class nodejs::npm($user = "ronen") {
 
   include nodejs
+
+
+  $npm_path = "/opt/node/lib/npm"
 
   package { "git":
     ensure => "installed"
   }
 
-  file { "/home/node/opt/lib":
+  file { "/opt/node/lib":
     ensure => "directory",
-    owner => "node",
-    group => "node"
+    owner => "$user",
+    group => "$user",
   }
 
-  vcsrepo { "/home/node/opt/lib/npm":
+  vcsrepo { $npm_path:
     ensure	=> present,
     provider => git,
     source => "http://github.com/isaacs/npm.git",
-    require => [Exec["install_node"], Package["git"], File["/home/node/opt/lib"]], 
+    require => [Exec["install_node"], Package["git"], File["/opt/node/lib"]], 
     revision => "HEAD"
   }
 
-  file { "/home/node/opt/lib/npm":
-    ensure => "directory",
-    owner => "node",
-    group => "node",
-    require => Vcsrepo["/home/node/opt/lib/npm"],
-    recurse => true,
-  }
   
   exec { "make_npm":
-    cwd => "/home/node/opt/lib/npm",
+    cwd => "$npm_path",
     command => "make install",
-    require => [Vcsrepo["/home/node/opt/lib/npm"], File["/home/node/opt/lib/npm"]],
-    creates => "/home/node/opt/bin/npm",
-    user => "node",
+    require => Vcsrepo[$npm_path],
+    creates => "/opt/node/bin/npm",
     timeout => 0,
-    path    => ["/usr/bin/","/bin/"],
+    path    => ["/usr/bin/","/bin/", "/opt/node/bin"],
   }
 
-  file { "/home/node/opt/bin/npm":
-    owner => "node",
-    group => "node",
-    recurse => true,
-    require => Exec["make_npm"]
-  }
+  
     
 }
