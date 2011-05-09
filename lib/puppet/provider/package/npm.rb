@@ -4,7 +4,7 @@ require 'puppet/provider/package'
 Puppet::Type.type(:package).provide :npm, :parent => Puppet::Provider::Package do
   desc "node.js package management with npm"
 
-  raise Puppet::Error, "The npm provider can only be used as root" if Process.euid != 0
+#   raise Puppet::Error, "The npm provider can only be used as root" if Process.euid != 0
 
   def self.exec_as_user(op, pkg)
     Puppet::Util::SUIDManager.asuser("node", "node") do 

@@ -11,11 +11,11 @@ class nodejs {
     ensure => "installed"
   }
 
-  package { "openssl-devel":
+  package { "libcurl4-openssl-dev":
     ensure => "installed"
   }
 
-  package { "gcc-c++":
+  package { "build-essential":
     ensure => "installed"
   }
 
@@ -48,16 +48,18 @@ class nodejs {
     cwd => "/tmp",
     creates => "/tmp/node-v0.3.3",
     require => [File["/tmp/node-v0.3.3.tar.gz"], User["node"]],
-    user => "node"
+    user => "node", 
+    path    => ["/usr/bin/","/bin/"],
   }
 
   exec { "bash ./configure --prefix=/home/node/opt":
     alias => "configure_node",
     cwd => "/tmp/node-v0.3.3",
-    require => [Exec["extract_node"], Package["openssl"], Package["openssl-devel"], Package["gcc-c++"]],
+    require => [Exec["extract_node"], Package["openssl"], Package["libcurl4-openssl-dev"], Package["build-essential"]],
     timeout => 0,
     creates => "/tmp/node-v0.3.3/.lock-wscript",
-    user => "node"
+    user => "node",
+    path    => ["/usr/bin/","/bin/"],
   }
 
   file { "/tmp/node-v0.3.3":
@@ -72,7 +74,8 @@ class nodejs {
     cwd => "/tmp/node-v0.3.3",
     require => Exec["configure_node"],
     timeout => 0,
-    user => "node"
+    user => "node",
+    path    => ["/usr/bin/","/bin/"],
   }
 
   exec { "install_node":
@@ -81,7 +84,8 @@ class nodejs {
     require => Exec["make_node"],
     timeout => 0,
     creates => "/home/node/opt/bin/node",
-    user => "node"
+    user => "node",
+    path    => ["/usr/bin/","/bin/"],
   }
 
   file { "/home/node/opt/bin/node":
