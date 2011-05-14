@@ -13,10 +13,6 @@ class nodejs($user = "ronen") {
     ensure => "installed"
   }
 
-  package { "build-essential":
-    ensure => "installed"
-  }
-
   file { "/tmp/$node_tar":
     source => "puppet:///modules/nodejs/$node_tar",
     ensure => "present",
