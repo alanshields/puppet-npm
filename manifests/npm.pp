@@ -33,7 +33,5 @@ class nodejs::npm($user = "ronen") {
     timeout => 0,
     path    => ["/usr/bin/","/bin/", "/opt/node/bin"],
   }
-
-  
     
 }

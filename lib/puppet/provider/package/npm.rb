@@ -8,7 +8,7 @@ Puppet::Type.type(:package).provide :npm, :parent => Puppet::Provider::Package d
 
   def self.exec_as_user(op, pkg)
     Puppet::Util::SUIDManager.asuser("node", "node") do 
-      s = execute ["/home/node/opt/bin/node", "/home/node/opt/lib/npm/cli.js", "#{op}", "#{pkg}"]
+      s = execute ["sudo","/opt/node/bin/node", "/opt/node/lib/npm/cli.js", "#{op}", "#{pkg}"]
       s.split("\n").collect do | line |
         yield line
       end
