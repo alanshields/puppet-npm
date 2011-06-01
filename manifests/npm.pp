@@ -1,5 +1,5 @@
 
-class nodejs::npm($user = "ronen") {
+class nodejs::npm($user) {
 
   include nodejs
 
