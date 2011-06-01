@@ -1,5 +1,3 @@
-
-
 class nodejs($user) {
 
   $node_ver = "v0.4.7"
