@@ -45,6 +45,7 @@ class nodejs($user = "ronen") {
     cwd => "/tmp/node-$node_ver",
     require => Exec["configure_node"],
     timeout => 0,
+    creates => "/tmp/node-$node_ver/tools/js2c.pyc",
     path    => ["/usr/bin/","/bin/"],
   }
 
