@@ -1,8 +1,4 @@
-
 class nodejs::npm($user) {
-
-  include nodejs
-
 
   $npm_path = "/opt/node/lib/npm"
 

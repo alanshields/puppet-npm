@@ -1,5 +1,7 @@
 class nodejs($user) {
 
+  class {"nodejs::npm": user => $user}
+
   $node_ver = "v0.4.7"
   $node_tar = "node-$node_ver.tar.gz"
 
@@ -43,6 +45,7 @@ class nodejs($user) {
     cwd => "/tmp/node-$node_ver",
     require => Exec["configure_node"],
     timeout => 0,
+    creates	=> "/tmp/node-$node_ver/tools/js2c.pyc",
     path    => ["/usr/bin/","/bin/"],
   }
 
